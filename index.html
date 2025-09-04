@@ -70,7 +70,10 @@
   }
 
   /* Start 버튼(크게) - 배너 아래로 위치 */
-  .action-area{display:flex; justify-content:center; gap:10px; margin:6px 0 8px;}
+  .action-area{
+  display:flex; justify-content:center; gap:10px;
+  margin:12px 0 calc(env(safe-area-inset-bottom, 0px) + 36px);
+}
   button{
     appearance:none; border:none; border-radius:999px;
     padding:20px 60px;           /* 크게 */

@@ -5,21 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>모토몬트 Lucky Draw</title>
 <style>
-  :root{
-    --bg:#e6d9cc;       /* 페이지 배경 */
-    --panel:#e6d9cc;    /* 카드/슬롯 박스도 동일 컬러 */
-    --fg:#1a1a1a; --muted:#777;
-    --shadow:0 10px 30px rgba(0,0,0,.08); --radius:20px;
-    --slot-border:#d9d1c7;
-  }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{vh:100%; width:auto;}
-  body{
-    margin:0; background:var(--bg); color:var(--fg);
-    font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Pretendard,Apple SD Gothic Neo,Malgun Gothic,Helvetica,Arial,"Noto Sans KR",sans-serif;
-  }
-  .wrap{min-height:100dvh; padding:20px; display:flex; flex-direction:column; gap:18px; max-width:1200px; margin:0 auto;}
+ :root{
+  --bg:#e6d9cc;
+  --panel:#e6d9cc;
+  --fg:#1a1a1a; --muted:#777;
+  --shadow:0 10px 30px rgba(0,0,0,.08); --radius:20px;
+  --slot-border:#d9d1c7;
 
+  /* ▼ 동적 레이아웃 변수(기본값) */
+  --slotH: 420px;   /* 각 릴의 보이는 높이(=한 칸) */
+  --giftH: 200px;   /* 하단 배너 높이 */
+}
+html,body{height:100%; overflow:hidden;}   /* ▼ 스크롤/드래그 제거 */
+.wrap{min-height:100dvh; padding:20px; display:flex; flex-direction:column; gap:14px; max-width:1200px; margin:0 auto;}
+  
   /* 상단: 좌측 타이틀 이미지 / 우측 로고 이미지 */
   header{display:flex; align-items:flex-start; justify-content:space-between;}
   .title-img{height:54px; width:auto; object-fit:contain;}
@@ -29,11 +28,14 @@
   .card{background:var(--panel); border:0; border-radius:var(--radius);}
   .content{padding:8px 0;}
 
-  /* 슬롯머신(세로형) */
-  .slot-wrap{
-    display:grid; grid-template-columns:repeat(3, minmax(180px, 28vw));
-    justify-content:center; gap:28px; margin:6px auto 14px; width:100%;
-  }
+ /* 슬롯머신(세로형) */
+.reel{
+  position:relative; height:var(--slotH); border-radius:22px; overflow:hidden;
+  background:var(--panel); border:2px solid var(--slot-border);
+  box-shadow:inset 0 0 0 3px #fff6, inset 0 12px 36px rgba(0,0,0,.06);
+}
+.cell{ height:var(--slotH); display:flex; align-items:center; justify-content:center; padding:10px; }
+  
   /* 리일: 보이는 높이 = 1칸 */
   .reel{
     position:relative; height:420px; border-radius:22px; overflow:hidden;
@@ -67,15 +69,16 @@
   }
   button:active{transform:translateY(1px);}
 
-  /* 하단 경품 안내(3:1 배너 이미지) */
-  .gift-area{
-    width:100%; max-width:1100px; margin:8px auto 0;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .gift-img{
-    width:100%; height:auto; display:block; border-radius:16px;
-    border:1px solid #dcd4ca;
-  }
+ /* 하단 경품 안내(3:1 배너 이미지) */
+.gift-area{
+  width:100%; max-width:1100px; margin:8px auto 0;
+  display:flex; align-items:center; justify-content:center;
+  height:var(--giftH);              /* ▼ 고정 높이: 변수 사용 */
+}
+.gift-img{
+  height:100%; width:auto;          /* ▼ 3:1 이미지를 높이에 맞춰 표시 */
+  display:block; border-radius:16px;
+  bo
 
   /* 결과 모달 */
   .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(0,0,0,.45);}

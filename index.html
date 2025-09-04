@@ -13,27 +13,27 @@
     --slot-border:#d9d1c7;
 
     /* 동적 레이아웃 변수(초기값, JS에서 재설정) */
-    --slotH: 420px;   /* 각 릴의 보이는 높이(=한 칸) */
-    --giftH: 200px;   /* 하단 배너 높이 */
+    --slotH: 360px;  /* 슬롯 한 칸(보이는 높이) - 약간 축소 */
+    --giftH: 200px;  /* 경품 배너 높이(3:1 비율로 자동 재계산) */
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{height:100%; overflow:hidden;} /* 스크롤/드래그 제거 */
+  html,body{height:100%; overflow:hidden;} /* 드래그/스크롤 방지 */
   body{
     margin:0; background:var(--bg); color:var(--fg);
     font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Pretendard,Apple SD Gothic Neo,Malgun Gothic,Helvetica,Arial,"Noto Sans KR",sans-serif;
   }
   .wrap{min-height:100dvh; padding:20px; display:flex; flex-direction:column; gap:14px; max-width:1200px; margin:0 auto;}
 
-  /* 상단: 좌측 타이틀 이미지 / 우측 로고 이미지 */
+  /* 상단: 좌측 타이틀 / 우측 로고 */
   header{display:flex; align-items:flex-start; justify-content:space-between;}
   .title-img{height:54px; width:auto; object-fit:contain;}
   .brand-img{height:48px; width:auto; object-fit:contain;}
 
-  /* 메인 패널 */
+  /* 메인 카드 */
   .card{background:var(--panel); border:0; border-radius:var(--radius);}
   .content{padding:8px 0;}
 
-  /* 슬롯머신(세로형) */
+  /* 슬롯머신(세로형 3릴) */
   .slot-wrap{
     display:grid; grid-template-columns:repeat(3, minmax(180px, 28vw));
     justify-content:center; gap:28px; margin:6px auto 8px; width:100%;
@@ -58,17 +58,7 @@
     filter:drop-shadow(0 2px 6px rgba(0,0,0,.12));
   }
 
-  /* Start 버튼(크게) */
-  .action-area{display:flex; justify-content:center; gap:10px; margin:2px 0 8px;}
-  button{
-    appearance:none; border:none; border-radius:999px;
-    padding:20px 60px;           /* 크게 */
-    font-size:20px; font-weight:900; /* 크게/두껍게 */
-    cursor:pointer; background:#111; color:#fff;
-  }
-  button:active{transform:translateY(1px);}
-
-  /* 하단 경품 배너(3:1) */
+  /* 경품 배너(3:1 비율 유지, 버튼 위로 이동) */
   .gift-area{
     width:100%; max-width:1100px; margin:6px auto 0;
     display:flex; align-items:center; justify-content:center;
@@ -79,13 +69,22 @@
     border:1px solid #dcd4ca;
   }
 
+  /* Start 버튼(크게) - 배너 아래로 위치 */
+  .action-area{display:flex; justify-content:center; gap:10px; margin:6px 0 8px;}
+  button{
+    appearance:none; border:none; border-radius:999px;
+    padding:20px 60px;           /* 크게 */
+    font-size:20px; font-weight:900; /* 크게/두껍게 */
+    cursor:pointer; background:#111; color:#fff;
+  }
+  button:active{transform:translateY(1px);}
+
   /* 결과 모달 */
   .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(0,0,0,.45);}
   .modal.show{display:flex;}
   .modal-card{width:min(520px,92vw); background:#fff; border-radius:18px; box-shadow:var(--shadow); padding:24px; text-align:center; border:1px solid #eee;}
   .modal h2{margin:0 0 8px; font-size:26px;}
   .modal .prize{font-size:36px; font-weight:800; margin:12px 0 6px;}
-  /* 확인 버튼: 가로 유지, 세로 1/4 수준으로 얇게 */
   .close{
     margin-top:10px; background:#f2f2f2; color:#111; border:none; border-radius:999px;
     padding:6px 18px;   /* 얇게 */
@@ -111,14 +110,14 @@
           <div class="reel"><div class="strip"></div></div>
         </div>
 
+        <!-- 경품 배너(버튼 위로 이동) -->
+        <div class="gift-area">
+          <img class="gift-img" src="./images/gift.png" alt="Lucky Draw 경품 안내" />
+        </div>
+
         <!-- Start 버튼 -->
         <div class="action-area">
           <button id="spinBtn" aria-label="Start">Start</button>
-        </div>
-
-        <!-- 하단 경품 배너 -->
-        <div class="gift-area">
-          <img class="gift-img" src="./images/gift.png" alt="Lucky Draw 경품 안내" />
         </div>
       </div>
     </section>
@@ -146,21 +145,40 @@
   }
   let settings = loadSettings();
 
-  /* 레이아웃을 뷰포트에 맞춤(아이패드 가로 모드 1스크린) */
+  /* 레이아웃을 뷰포트에 맞춤: 배너는 3:1 비율 유지, 슬롯은 약간 축소하여 한 화면에 배치 */
   function fitLayout(){
     const vh = (window.visualViewport?.height) || window.innerHeight;
+
     const header = document.querySelector('header');
     const btnArea = document.querySelector('.action-area');
+    const giftArea = document.querySelector('.gift-area');
+
     const headerH = header?.offsetHeight || 0;
     const btnH    = btnArea?.offsetHeight || 0;
 
-    const MARGIN_PAD = 20 + 20 + 8; // wrap top/bottom + content 여유
-    const giftH = Math.round(Math.min(Math.max(vh * 0.18, 120), 220)); // 18%~220px
-    let available = vh - headerH - btnH - giftH - MARGIN_PAD;
-    const slotH = Math.round(Math.min(Math.max(available, 260), 460));  // 260~460px
+    // 경품 배너 높이 = 실제 너비 / 3 (3:1 비율 유지)
+    const giftW = giftArea?.getBoundingClientRect().width || 900;
+    let giftH = Math.round(giftW / 3);
 
-    document.documentElement.style.setProperty('--slotH', slotH + 'px');
+    // 한 화면에 모두 들어오도록 남는 높이 계산
+    const MARGIN_PAD = 20 + 20 + 8;   // wrap 상/하 + content 여유
+    let available = vh - headerH - btnH - giftH - MARGIN_PAD;
+
+    // 슬롯 높이 범위(좀 더 작게)
+    const SLOT_MIN = 240;
+    const SLOT_MAX = 360;
+    let slotH = Math.round(Math.min(Math.max(available, SLOT_MIN), SLOT_MAX));
+
+    // 공간이 모자라면 배너를 약간 줄여서 1스크린 고정(최소 90px)
+    if (available < SLOT_MIN) {
+      const need = SLOT_MIN - available;
+      giftH = Math.max(90, giftH - need);
+      available = vh - headerH - btnH - giftH - MARGIN_PAD;
+      slotH = Math.round(Math.min(Math.max(available, SLOT_MIN), SLOT_MAX));
+    }
+
     document.documentElement.style.setProperty('--giftH', giftH + 'px');
+    document.documentElement.style.setProperty('--slotH', slotH + 'px');
   }
 
   // 심볼 정의 (0=100ml, 1=20ml, 2=coupon)
@@ -173,11 +191,14 @@
   const reels = Array.from(document.querySelectorAll('.reel .strip'));
   const reelBoxes = Array.from(document.querySelectorAll('.reel'));
 
-  // 스트립 길이(여유 있게, 이미지 사라짐 방지)
+  // 스트립을 충분히 길게(이미지 사라짐 방지)
   const REP = 90;
   const STRIP_LEN = SYMBOLS.length * REP;
 
-  function cellHeight(){ return reelBoxes[0].clientHeight || parseInt(getComputedStyle(document.documentElement).getPropertyValue('--slotH')) || 420; }
+  function cellHeight(){
+    const cssH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--slotH')) || 360;
+    return reelBoxes[0]?.clientHeight || cssH;
+  }
 
   function buildStrips(){
     const H = cellHeight();
@@ -254,7 +275,7 @@
 
     const {grade, result} = chooseOutcome();
 
-    // 타이밍: 0~2s 빠르게, 2~4s 감속, 4~5s 정지 유지
+    // 0~2s 빠르게 → 2~4s 감속 → 4~5s 정지 화면 유지
     const FAST_MS = 2000, SLOW_MS = 2000, HOLD_MS = 1000, TOTAL = FAST_MS + SLOW_MS;
     const H = cellHeight();
 
@@ -270,8 +291,8 @@
     const baseLoops = 18;              // 3칸=1바퀴 기준
     const loopDelta = [0, 2, 4];
 
-    // 목표까지 이동할 '칸 수' (아래로 이동 = 인덱스 감소)
-    // k ≡ (현재심볼 - 목표심볼) (mod 3)  ← 부호 수정 반영
+    // 목표까지 이동할 '칸 수'(아래로 이동 = 인덱스 감소)
+    // k ≡ (현재심볼 - 목표심볼) (mod 3)  ← 부호 수정 적용
     const kSteps = startSym.map((cs, i) => {
       const kMod = mod(cs - result[i], 3);
       return kMod + (baseLoops + loopDelta[i]) * 3;
@@ -328,7 +349,9 @@
 
   closeModal.addEventListener('click', ()=>{
     modal.classList.remove('show');
-    relayout();      // 레이아웃/스트립 재구성
+    // 재배치 및 스트립 재생성(다음 라운드 준비)
+    const relayout = () => { fitLayout(); buildStrips(); };
+    relayout();
     spinning=false;
   });
   modal.addEventListener('click', e=>{ if(e.target===modal) closeModal.click(); });
